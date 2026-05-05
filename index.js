@@ -20,8 +20,9 @@ let riders = [
 ]
 
 let rides = []
-let rideIdCounter = 1
+
 let riderIdCounter = 4
+let rideIdCounter = 1
 
 app.get('/riders', (req, res) => {
     res.json(riders)
@@ -29,6 +30,7 @@ app.get('/riders', (req, res) => {
 
 app.post('/riders', (req, res) => {
     const { name, vehicle } = req.body
+
     if (!name || !vehicle)
         return res.status(400).json({ message: "Missing fields" })
 
@@ -40,8 +42,26 @@ app.post('/riders', (req, res) => {
     }
 
     riders.push(newRider)
-    res.json(newRider)
+    res.status(201).json(newRider)
 })
+
+app.put('/riders/:id', (req, res) => {
+    const rider = riders.find(r => r.id === Number(req.params.id))
+    if (!rider) return res.status(404).json({ message: "Rider not found" })
+
+    const { name, vehicle, available } = req.body
+
+    if (name) rider.name = name
+    if (vehicle) rider.vehicle = vehicle
+    if (available !== undefined) rider.available = available
+
+    res.json(rider)
+})
+
+app.get('/available-riders', (req, res) => {
+    res.json(riders.filter(r => r.available))
+})
+
 app.get('/random-rider', (req, res) => {
     const available = riders.filter(r => r.available)
 
@@ -51,20 +71,13 @@ app.get('/random-rider', (req, res) => {
     const rider = available[Math.floor(Math.random() * available.length)]
     res.json(rider)
 })
+
 app.get('/rides', (req, res) => {
     res.json(rides)
 })
 
 app.post('/rides', (req, res) => {
-    const {
-        name,
-        number,
-        pickup,
-        dropoff,
-        service,
-        distance,
-        fare
-    } = req.body
+    const { name, number, pickup, dropoff, service, distance, fare } = req.body
 
     if (!name || !number || !pickup || !dropoff)
         return res.status(400).json({ message: "Missing fields" })
@@ -87,16 +100,23 @@ app.post('/rides', (req, res) => {
         distance,
         fare,
         status: "ongoing",
-        timestamp: new Date().toISOString()
+        timestamp: new Date()
     }
 
     rides.push(newRide)
-    res.json(newRide)
+    res.status(201).json(newRide)
+})
+
+app.get('/rides/:id', (req, res) => {
+    const ride = rides.find(r => r.id === Number(req.params.id))
+    if (!ride) return res.status(404).json({ message: "Not found" })
+
+    res.json(ride)
 })
 
 app.put('/rides/:id', (req, res) => {
     const ride = rides.find(r => r.id === Number(req.params.id))
-    if (!ride) return res.status(404).json({ message: "Not found" })
+    if (!ride) return res.status(404).json({ message: "Ride not found" })
 
     const { status } = req.body
     if (status) ride.status = status
@@ -114,6 +134,7 @@ app.delete('/rides/:id', (req, res) => {
     if (index === -1) return res.status(404).json({ message: "Not found" })
 
     const ride = rides[index]
+
     const rider = riders.find(r => r.id === ride.riderId)
     if (rider) rider.available = true
 
@@ -122,6 +143,26 @@ app.delete('/rides/:id', (req, res) => {
     res.json({ message: "Ride deleted" })
 })
 
+app.get('/rides/status/:status', (req, res) => {
+    res.json(
+        rides.filter(r => r.status.toLowerCase() === req.params.status.toLowerCase())
+    )
+})
+
+app.get('/stats', (req, res) => {
+    res.json({
+        totalUsers: rides.length,
+        totalRiders: riders.length,
+        totalRides: rides.length,
+        ongoing: rides.filter(r => r.status === "ongoing").length,
+        completed: rides.filter(r => r.status === "completed").length
+    })
+})
+
+app.get('/health', (req, res) => {
+    res.json({ status: "JoyRide API running" })
+})
+
 app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`)
+    console.log(`🚀 Server running on port ${PORT}`)
 })
