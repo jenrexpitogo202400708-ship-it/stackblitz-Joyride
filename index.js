@@ -13,7 +13,6 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'))
 })
 
-// ---------------- DATA ----------------
 let riders = [
     { id: 1, name: "Pedro", vehicle: "Motorcycle", available: true },
     { id: 2, name: "Jose", vehicle: "Motorcycle", available: true },
@@ -24,7 +23,6 @@ let rides = []
 let rideIdCounter = 1
 let riderIdCounter = 4
 
-// ---------------- RIDERS ----------------
 app.get('/riders', (req, res) => {
     res.json(riders)
 })
@@ -44,8 +42,6 @@ app.post('/riders', (req, res) => {
     riders.push(newRider)
     res.json(newRider)
 })
-
-// ---------------- RANDOM RIDER ----------------
 app.get('/random-rider', (req, res) => {
     const available = riders.filter(r => r.available)
 
@@ -55,8 +51,6 @@ app.get('/random-rider', (req, res) => {
     const rider = available[Math.floor(Math.random() * available.length)]
     res.json(rider)
 })
-
-// ---------------- RIDES ----------------
 app.get('/rides', (req, res) => {
     res.json(rides)
 })
@@ -128,7 +122,6 @@ app.delete('/rides/:id', (req, res) => {
     res.json({ message: "Ride deleted" })
 })
 
-// ---------------- START ----------------
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`)
 })
